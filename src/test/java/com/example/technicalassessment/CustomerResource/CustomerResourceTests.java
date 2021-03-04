@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataM
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -28,18 +29,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureDataMongo
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 public class CustomerResourceTests {
 
     private final String rootContext = "/customer";
     @Autowired
     CustomerRepository customerRepository;
+
     @Autowired
     private MockMvc mvc;
 
     @Before
     public void setUp() throws Exception {
         customerRepository.save(new Customer("Tom", "Topper", "21 baker street", true));
+
     }
 
     @Test
@@ -102,7 +105,7 @@ public class CustomerResourceTests {
     }
 
     @Test
-    public void testGetCustomers()throws Exception{
+    public void testGetCustomers() throws Exception {
         customerRepository.save(new Customer("Sam", "Samus", "12 Ball street", true));
         customerRepository.save(new Customer("Jack", "Black", "11 Rock street", true));
         customerRepository.save(new Customer("Luke", "Walker", "6 Star street", true));
@@ -114,11 +117,32 @@ public class CustomerResourceTests {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
-      String resultJson = result.getResponse().getContentAsString();
-        List<Customer> customers = new ObjectMapper().readValue(resultJson,List.class);
-        assertEquals(numberOfCustomers,customers.size());
+        String resultJson = result.getResponse().getContentAsString();
+        List<Customer> customers = new ObjectMapper().readValue(resultJson, List.class);
+        assertEquals(numberOfCustomers, customers.size());
 
     }
+
+    @Test
+    public void testGetStatusFalseCustomer() throws Exception {
+        customerRepository.save(new Customer("Sam", "Samus", "12 Ball street", false));
+       Customer falseStatusCustomer = null;
+       for(Customer tempCustomer: customerRepository.findAll()){
+           if (!tempCustomer.isCustomerStatus()){
+               falseStatusCustomer = tempCustomer;
+           }
+       }
+
+        MockHttpServletRequestBuilder requestBuilder = get(rootContext + "/"+falseStatusCustomer.getId()).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mvc
+                .perform(requestBuilder)
+                .andExpect(status().isUnauthorized())
+                .andDo(print())
+                .andReturn();
+
+
+    }
+
 
 
     private String asJson(Object object) throws JsonProcessingException {
