@@ -1,4 +1,9 @@
 package com.example.technicalassessment.service;
 
-public interface CustomerRepository {
+import com.example.technicalassessment.models.Customer;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface CustomerRepository extends MongoRepository<Customer, String> {
+
+
 }
