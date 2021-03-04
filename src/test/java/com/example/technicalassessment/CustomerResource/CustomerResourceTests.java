@@ -16,11 +16,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -74,6 +71,20 @@ public class CustomerResourceTests {
         assertEquals(customerRepository.findAll().get(0).getCustomerFirstName(),"New first name");
         assertEquals(customerRepository.findAll().get(0).getCustomerLastName(),"New last name");
         assertNotEquals(customerRepository.findAll().get(0).getCustomerFirstName(),"Tom");
+    }
+
+    @Test
+    public void testDeleteCustomer() throws Exception{
+        Customer customer = customerRepository.findAll().get(0);
+        assertTrue(customerRepository.findById(customer.getId()).isPresent());
+        MockHttpServletRequestBuilder requestBuilder = delete(rootContext + "/"+customer.getId()).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc
+                .perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        assertFalse(customerRepository.findById(customer.getId()).isPresent());
     }
 
 
