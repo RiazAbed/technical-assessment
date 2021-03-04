@@ -12,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataM
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -126,14 +125,14 @@ public class CustomerResourceTests {
     @Test
     public void testGetStatusFalseCustomer() throws Exception {
         customerRepository.save(new Customer("Sam", "Samus", "12 Ball street", false));
-       Customer falseStatusCustomer = null;
-       for(Customer tempCustomer: customerRepository.findAll()){
-           if (!tempCustomer.isCustomerStatus()){
-               falseStatusCustomer = tempCustomer;
-           }
-       }
+        Customer falseStatusCustomer = null;
+        for (Customer tempCustomer : customerRepository.findAll()) {
+            if (!tempCustomer.isCustomerStatus()) {
+                falseStatusCustomer = tempCustomer;
+            }
+        }
 
-        MockHttpServletRequestBuilder requestBuilder = get(rootContext + "/"+falseStatusCustomer.getId()).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        MockHttpServletRequestBuilder requestBuilder = get(rootContext + "/" + falseStatusCustomer.getId()).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
         MvcResult result = mvc
                 .perform(requestBuilder)
                 .andExpect(status().isUnauthorized())
@@ -142,8 +141,6 @@ public class CustomerResourceTests {
 
 
     }
-
-
 
     private String asJson(Object object) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
