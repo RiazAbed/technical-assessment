@@ -14,7 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -43,8 +46,6 @@ public class CustomerResourceTests {
     public void testInsertCustomer() throws Exception {
         int collectionSize = customerRepository.findAll().size();
         Customer newCustomer = new Customer("Jack", "Black", "1 zebra street", true);
-
-
         MockHttpServletRequestBuilder requestBuilder = put(rootContext + "/").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(asJson(newCustomer));
         mvc
                 .perform(requestBuilder)
@@ -68,16 +69,16 @@ public class CustomerResourceTests {
                 .andDo(print())
                 .andReturn();
 
-        assertEquals(customerRepository.findAll().get(0).getCustomerFirstName(),"New first name");
-        assertEquals(customerRepository.findAll().get(0).getCustomerLastName(),"New last name");
-        assertNotEquals(customerRepository.findAll().get(0).getCustomerFirstName(),"Tom");
+        assertEquals(customerRepository.findAll().get(0).getCustomerFirstName(), "New first name");
+        assertEquals(customerRepository.findAll().get(0).getCustomerLastName(), "New last name");
+        assertNotEquals(customerRepository.findAll().get(0).getCustomerFirstName(), "Tom");
     }
 
     @Test
-    public void testDeleteCustomer() throws Exception{
+    public void testDeleteCustomer() throws Exception {
         Customer customer = customerRepository.findAll().get(0);
         assertTrue(customerRepository.findById(customer.getId()).isPresent());
-        MockHttpServletRequestBuilder requestBuilder = delete(rootContext + "/"+customer.getId()).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        MockHttpServletRequestBuilder requestBuilder = delete(rootContext + "/" + customer.getId()).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
         mvc
                 .perform(requestBuilder)
                 .andExpect(status().isOk())
@@ -85,6 +86,38 @@ public class CustomerResourceTests {
                 .andReturn();
 
         assertFalse(customerRepository.findById(customer.getId()).isPresent());
+    }
+
+    @Test
+    public void testGetCustomer() throws Exception {
+        String customerId = customerRepository.findAll().get(0).getId();
+        MockHttpServletRequestBuilder requestBuilder = get(rootContext + "/" + customerId).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mvc
+                .perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        assertTrue(result.getResponse().getContentAsString().contains(customerId));
+    }
+
+    @Test
+    public void testGetCustomers()throws Exception{
+        customerRepository.save(new Customer("Sam", "Samus", "12 Ball street", true));
+        customerRepository.save(new Customer("Jack", "Black", "11 Rock street", true));
+        customerRepository.save(new Customer("Luke", "Walker", "6 Star street", true));
+
+        int numberOfCustomers = customerRepository.findAll().size();
+        MockHttpServletRequestBuilder requestBuilder = get(rootContext + "/").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mvc
+                .perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+      String resultJson = result.getResponse().getContentAsString();
+        List<Customer> customers = new ObjectMapper().readValue(resultJson,List.class);
+        assertEquals(numberOfCustomers,customers.size());
+
     }
 
 
