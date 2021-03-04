@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -23,10 +24,10 @@ public class CustomerResource {
     }
 
     @PostMapping(path = "/", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Customer> updateCustomer(@RequestBody Customer customer) throws URISyntaxException{
+    public ResponseEntity<Customer> updateCustomer(@RequestBody Customer customer) throws URISyntaxException {
         Optional<Customer> optionalCustomer = customerRepository.findById(customer.getId());
 
-        if (!optionalCustomer.isPresent()){
+        if (!optionalCustomer.isPresent()) {
             return ResponseEntity.notFound().build();
         }
         Customer newCustomer = optionalCustomer.get();
@@ -42,15 +43,29 @@ public class CustomerResource {
     }
 
     @DeleteMapping(path = "/{customernumber}", produces = "application/json")
-    public ResponseEntity<Customer> deleteCustomer(@PathVariable String customernumber){
+    public ResponseEntity<Customer> deleteCustomer(@PathVariable String customernumber) {
         Optional<Customer> optionalCustomer = customerRepository.findById(customernumber);
 
-        if (!optionalCustomer.isPresent()){
+        if (!optionalCustomer.isPresent()) {
             return ResponseEntity.notFound().build();
         }
         customerRepository.deleteById(customernumber);
 
         return ResponseEntity.ok(optionalCustomer.get());
+    }
+
+    @GetMapping(path = "/{customernumber}", produces = "application/json")
+    public ResponseEntity<Customer> getCustomer(@PathVariable String customernumber) {
+        Optional<Customer> optionalCustomer = customerRepository.findById(customernumber);
+        if (!optionalCustomer.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(optionalCustomer.get());
+    }
+
+    @GetMapping(path = "/", produces = "application/json")
+    public ResponseEntity<List<Customer>> getCustomer(){
+        return ResponseEntity.ok(customerRepository.findAll());
     }
 
 }
