@@ -3,6 +3,7 @@ package com.example.technicalassessment.rest;
 import com.example.technicalassessment.models.Customer;
 import com.example.technicalassessment.service.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,10 +56,13 @@ public class CustomerResource {
     }
 
     @GetMapping(path = "/{customernumber}", produces = "application/json")
-    public ResponseEntity<Customer> getCustomer(@PathVariable String customernumber) {
+    public ResponseEntity<?> getCustomer(@PathVariable String customernumber) {
         Optional<Customer> optionalCustomer = customerRepository.findById(customernumber);
         if (!optionalCustomer.isPresent()) {
             return ResponseEntity.notFound().build();
+        }
+        if (!optionalCustomer.get().isCustomerStatus()){
+            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
         return ResponseEntity.ok(optionalCustomer.get());
     }
