@@ -41,4 +41,16 @@ public class CustomerResource {
 
     }
 
+    @DeleteMapping(path = "/{customernumber}", produces = "application/json")
+    public ResponseEntity<Customer> deleteCustomer(@PathVariable String customernumber){
+        Optional<Customer> optionalCustomer = customerRepository.findById(customernumber);
+
+        if (!optionalCustomer.isPresent()){
+            return ResponseEntity.notFound().build();
+        }
+        customerRepository.deleteById(customernumber);
+
+        return ResponseEntity.ok(optionalCustomer.get());
+    }
+
 }
